@@ -1,9 +1,8 @@
-"""This module is used to track the locations of the files for each of the circuits. Also gives some surface level
-information about the files."""
-
 import geojson
 import os
 
+"""This module is used to track the locations of the files for each of the circuits. Also gives some surface level
+information about the files."""
 
 def track_file_dict():
     """This function produces a dictionary of the the names of the tracks and which files they are in. Makes it
