@@ -39,4 +39,4 @@ def return_coords(trackname):
 
 if __name__ == '__main__':
     track_dict_output = track_file_dict()
-    print(track_dict_output)
+    print(track_dict_output)  # tests to see if works

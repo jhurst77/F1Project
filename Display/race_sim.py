@@ -8,23 +8,22 @@ import team_colours
 
 
 # ###### Constants ###### #
-CANWIDTH = 800  # window width
-CANHEIGHT = 800  # window width
+WINWIDTH = 800  # window width
+WINHEIGHT = 800  # window width
 FRAMERATE = 30
 OFFSET = 10  # map offset from edge
-TRACKNAME = 'Barcelona'
+TRACKNAME = 'Spielberg'
+track = mapPoints.normCoords(circuit_points.return_coords(TRACKNAME))  # normalised coords of track
 YEAR = 2020
-# track = mapPoints.Bah_coords
-track = mapPoints.normCoords(circuit_points.return_coords(TRACKNAME))
-SPEEDMULT = 10
+SPEEDMULT = 10  # speed sim up or down from real time
 
 pygame.init()
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((CANWIDTH, CANHEIGHT), vsync= True)
+screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), vsync= True)
 
 
 class Track:
-    mapRange = CANWIDTH - 2 * OFFSET  # width of track on screen
+    mapRange = WINWIDTH - 2 * OFFSET  # width of track on screen
     vert_shift = mapPoints.vert_shiftX(track) * 0.5
     track_coords = mapPoints.normCoords(track)  # coords ranging from 0 to 1
     sec_boundary_pts = mapPoints.sectors[TRACKNAME]
@@ -40,8 +39,8 @@ class Track:
         list of point pairs that are the coordinates."""
         point = 0
         while point in range(len(self.track_coords)):
-            x = CANWIDTH - (OFFSET + ((self.track_coords[point][1]) * self.mapRange))
-            y = CANWIDTH - (OFFSET + self.mapRange * (self.track_coords[point][0])) \
+            x = WINWIDTH - (OFFSET + ((self.track_coords[point][1]) * self.mapRange))
+            y = WINWIDTH - (OFFSET + self.mapRange * (self.track_coords[point][0])) \
                 - self.vert_shift * self.mapRange  # done because not all tracks are square
             point += 1
             self.track_points.append([x, y])

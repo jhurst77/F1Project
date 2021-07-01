@@ -7,7 +7,7 @@ import circuit_points
 # FUNCTIONS USED LATER TO TIDY THE OUTPUTTED DATA
 ##############################################################################
 
-sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [42, 94, 0], 'Silverstone': [20, 40, 0]}
+sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [20, 40, 0], 'Silverstone': [20, 40, 0]}
 
 def testing_sectors(TRACKNAME, sector_to_test):
     """Function used to visually test the positions of the sector boundaries. Pretty shoddily made function but works.
