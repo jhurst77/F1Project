@@ -1,4 +1,4 @@
-import geojson
+﻿import geojson
 import os
 
 """This module is used to track the locations of the files for each of the circuits. Also gives some surface level
@@ -12,7 +12,7 @@ def track_file_dict():
     tracks = dict()
     os.chdir(circ_direct)
     for files in os.listdir(circ_direct):
-        # iterates over the files and adds to dictionary with key = track name, item being ffile name
+        # iterates over the files and adds to dictionary with key = track name, item being file name
         filename = str(files)
         with open(files) as f:
             gj = geojson.load(f)
