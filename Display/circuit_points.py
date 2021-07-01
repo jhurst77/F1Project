@@ -1,10 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr  4 14:37:06 2021
+"""This module is used to track the locations of the files for each of the circuits. Also gives some surface level
+information about the files."""
 
-@author: jameshurst
-"""
 import geojson
 import os
 
