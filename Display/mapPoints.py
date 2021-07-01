@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr  4 14:37:06 2021
-
-@author: jameshurst
-"""
 import math
 import pygame
 import circuit_points
