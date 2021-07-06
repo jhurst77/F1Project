@@ -6,14 +6,13 @@ import sector_times
 import math
 import team_colours
 
-
 # ###### Constants ###### #
 WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
 FRAMERATE = 30
 OFFSET = 10  # map offset from edge
 TRACKNAME = 'Spielberg'
-track = mapPoints.normCoords(circuit_points.return_coords(TRACKNAME))  # normalised coords of track
+# track = mapPoints.normCoords(circuit_points.return_coords(TRACKNAME))  # normalised coords of track
 YEAR = 2020
 SPEEDMULT = 10  # speed sim up or down from real time
 
@@ -25,7 +24,7 @@ screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), vsync= True)
 class Track:
     mapRange = WINWIDTH - 2 * OFFSET  # width of track on screen
     vert_shift = mapPoints.vert_shiftX(track) * 0.5
-    track_coords = mapPoints.normCoords(track)  # coords ranging from 0 to 1
+    track_coords = track  # coords ranging from 0 to 1
     sec_boundary_pts = mapPoints.sectors[TRACKNAME]
     track_points = []
 
@@ -42,8 +41,8 @@ class Track:
             x = WINWIDTH - (OFFSET + ((self.track_coords[point][1]) * self.mapRange))
             y = WINWIDTH - (OFFSET + self.mapRange * (self.track_coords[point][0])) \
                 - self.vert_shift * self.mapRange  # done because not all tracks are square
-            point += 1
             self.track_points.append([x, y])
+            point += 1
 
     def draw_map(self):
         """ simple function that draws the map"""
