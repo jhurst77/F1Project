@@ -49,16 +49,15 @@ def testing_sectors(TRACKNAME, sector_to_test):
             clock.tick(FRAMERATE)
         pygame.quit()
 
-    # def draw_box():
-    #     minX, maxX, minY, maxY = findMinMax(track_points)
-    #     bleft = (minX, maxY)
-    #     bright = (maxX, maxY)
-    #     tleft = (minX, minY)
-    #     tright = (maxX, minY)
-    #     pygame.draw.line(screen, 'green', bleft, bright)
-    #     pygame.draw.line(screen, 'blue', bright, tright)
-    #     pygame.draw.line(screen, 'yellow', tright, tleft)
-    #     pygame.draw.line(screen, 'orange', tleft, bleft)
+    def draw_box():
+        minX, maxX, minY, maxY = findMinMax(track_points)
+        bleft = (minX, maxY)
+        bright = (maxX, maxY)
+        tleft = (minX, minY)
+        tright = (maxX, minY)
+        pygame.draw.line(screen, 'green', bleft, bright)
+        pygame.draw.line(screen, 'blue', bright, tright)
+        pygame.draw.line(screen, 'yellow', tright, tleft)
     test()
 
 def findMinMax(coords):

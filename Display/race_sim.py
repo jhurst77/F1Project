@@ -20,14 +20,12 @@ screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), vsync= True)
 
 
 class Track:
-    mapRange = WINWIDTH - 2 * OFFSET  # width of track on screen
-    # vert_shift = mapPoints.vert_shiftX(track) * 0.5
-    sec_boundary_pts = mapPoints.sectors[TRACKNAME]
-
     def __init__(self, name):
+        self.sec_boundary_pts = mapPoints.sectors[TRACKNAME]
         self.name = name
         self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
         self.sec_dists = [self.sec_dist(1), self.sec_dist(2), self.sec_dist(3)]  # distances for each sector
+        print(self.sec_dists)
 
     def draw_map(self):
         """ simple function that draws the map"""
