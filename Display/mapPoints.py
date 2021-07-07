@@ -60,6 +60,7 @@ def testing_sectors(TRACKNAME, sector_to_test):
         pygame.draw.line(screen, 'yellow', tright, tleft)
     test()
 
+
 def findMinMax(coords):
     """find the minimum and maximum of the X and Y values so that the
     bounding box for the map of the circuit can be found.
@@ -103,26 +104,6 @@ def normCoords(coords):
     return normCoords
 
 
-# def sec_dist(self, sec_no):
-#     """"Function that calculates the distance of a sector (ranging from 1-3). Can produce a list of all the
-#     distances using lists."""
-#     sec_index = sec_no - 1  # indices start from 0 not 1
-#     sec_dist_output = 0
-#     start_pt = self.sec_boundary_pts[sec_index - 1]
-#     end_pt = self.sec_boundary_pts[sec_index]
-#     pt = start_pt
-#     amt_pts = len(self.track_points)
-#     while (pt % amt_pts) != end_pt:  # while not at end point of sector
-#         sec_dist_output += math.dist(self.track_points[pt], self.track_points[pt - 1])
-#         pt += 1
-#     return sec_dist_output  # returns float value
-
-
-# def distance(x1, y1, x2, y2):
-#     """ simple function that returns the distance between two point pairs"""
-#     return math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-
-
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     point = 0
     track = normCoords(circuit_points.return_coords(TRACKNAME))
@@ -133,22 +114,22 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     mapRangeX = WINWIDTH - 2 * OFFSET
     mapRangeY = WINHEIGHT - 2 * OFFSET
     mapReach = min(mapRangeX, mapRangeY)/2
-    rotation = '2Clockwise'
+    rotation = 'OG'  # TODO: integrate this into function better, make not strings, make not hardcoded.
     track_points = []
     while point in range(len(track)):
-        x = (0.5 * WINWIDTH * (X_ave_pos+1)) + (mapReach * track[point][0])
+        x = (0.5 * WINWIDTH * (-X_ave_pos+1)) + (mapReach * track[point][0])
         y = (0.5 * WINHEIGHT * (Y_ave_pos+1)) - (mapReach * track[point][1])
-        track_points.append([x,y])
-        # if rotation == '1Clockwise':
-        #     track_points.append([WINWIDTH - y, x - WINHEIGHT])
-        # elif rotation == 'OG':
-        #     track_points.append([x, y])
-        # elif rotation == '2Clockwise':
-        #     track_points.append([WINWIDTH - x, WINHEIGHT - y])
-        # elif rotation == '1AntiClock':
-        #     track_points.append([y, WINHEIGHT - x])
+        # track_points.append([x,y])
+        if rotation == '1Clockwise':
+            track_points.append([WINWIDTH - y, x - WINHEIGHT])
+        elif rotation == 'OG':
+            track_points.append([x, y])
+        elif rotation == '2Clockwise':
+            track_points.append([WINWIDTH - x, WINHEIGHT - y])
+        elif rotation == '1AntiClock':
+            track_points.append([y, WINHEIGHT - x])
         point += 1
     return track_points
 
 if __name__ == '__main__':
-    testing_sectors('Spielberg', 2)
+    testing_sectors('Barcelona', 2)
