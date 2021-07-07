@@ -1,6 +1,5 @@
 import pygame
 
-import circuit_points
 import mapPoints
 import sector_times
 import math
@@ -9,12 +8,11 @@ import team_colours
 # ###### Constants ###### #
 WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
-FRAMERATE = 30
+FRAMERATE = 120
 OFFSET = 10  # map offset from edge
 TRACKNAME = 'Spielberg'
-# track = mapPoints.normCoords(circuit_points.return_coords(TRACKNAME))  # normalised coords of track
 YEAR = 2020
-SPEEDMULT = 10  # speed sim up or down from real time
+SPEEDMULT = 30  # speed sim up or down from real time
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -23,26 +21,13 @@ screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), vsync= True)
 
 class Track:
     mapRange = WINWIDTH - 2 * OFFSET  # width of track on screen
-    vert_shift = mapPoints.vert_shiftX(track) * 0.5
-    track_coords = track  # coords ranging from 0 to 1
+    # vert_shift = mapPoints.vert_shiftX(track) * 0.5
     sec_boundary_pts = mapPoints.sectors[TRACKNAME]
-    track_points = []
 
     def __init__(self, name):
         self.name = name
-        self.generate_points()
+        self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
         self.sec_dists = [self.sec_dist(1), self.sec_dist(2), self.sec_dist(3)]  # distances for each sector
-
-    def generate_points(self):
-        """Generates the points relating to the canvas width and height. Returns
-        list of point pairs that are the coordinates."""
-        point = 0
-        while point in range(len(self.track_coords)):
-            x = WINWIDTH - (OFFSET + ((self.track_coords[point][1]) * self.mapRange))
-            y = WINWIDTH - (OFFSET + self.mapRange * (self.track_coords[point][0])) \
-                - self.vert_shift * self.mapRange  # done because not all tracks are square
-            self.track_points.append([x, y])
-            point += 1
 
     def draw_map(self):
         """ simple function that draws the map"""
@@ -86,7 +71,7 @@ class Car:
         self.y = track.track_points[self.pt][1]  # starting point of car y
         self.team_name = data.team_name(name)
         self.colour = team_colours.team_colours[int(YEAR)][self.team_name]
-        self.Track = track
+        self.track = track
         self.lap = 0
         self.BOX = False
         self.BOX_start_time = 0
@@ -96,23 +81,23 @@ class Car:
 
     def car_speed(self, current_sector):
         sec_index = current_sector - 1
-        sec_speed = self.Track.sec_dists[sec_index] / self.sec_times[sec_index]
-        sec_frame_speed = sec_speed * SPEEDMULT / FRAMERATE
+        sec_speed = self.track.sec_dists[sec_index] / self.sec_times[sec_index]
+        sec_frame_speed = sec_speed / FRAMERATE
         return sec_frame_speed
 
     def speed_components(self):
-        size = len(self.Track.track_coords) - 1
+        size = len(self.track.track_points) - 1
         next_pt = (self.pt + 1) % size
-        abs_dist = math.dist(self.Track.track_points[next_pt], self.Track.track_points[self.pt])
-        x_dist = (self.Track.track_points[next_pt][0] - self.Track.track_points[self.pt][0])
-        y_dist = (self.Track.track_points[next_pt][1] - self.Track.track_points[self.pt][1])
+        abs_dist = math.dist(self.track.track_points[next_pt], self.track.track_points[self.pt])
+        x_dist = (self.track.track_points[next_pt][0] - self.track.track_points[self.pt][0])
+        y_dist = (self.track.track_points[next_pt][1] - self.track.track_points[self.pt][1])
         x_prop = x_dist / abs_dist
         y_prop = y_dist / abs_dist
         return x_prop, y_prop
 
     def move_blocks(self):
         """function that moves the car. Input pt is the most recent point the car went through."""
-        sector = Track.sector_given_point(self.Track, self.pt)
+        sector = Track.sector_given_point(self.track, self.pt)
         x_prop, y_prop = self.speed_components()
         speed = self.car_speed(sector)
         x = speed * x_prop
@@ -122,15 +107,15 @@ class Car:
     def update_if_close(self):
         """corrects the car to one of the track points if it's within a certain range. Also updates the current pt when
         it does the correction."""
-        sector = self.Track.sector_given_point(self.pt)
+        sector = self.track.sector_given_point(self.pt)
         gap = self.car_speed(sector)
         # must be within this radius around a point to correct to a point (nominally 1 frame).
-        size = len(self.Track.track_points) - 1  # mod input to loop through the track points
+        size = len(self.track.track_points) - 1  # mod input to loop through the track points
         new_pt = (self.pt + 1) % size
-        if math.dist([self.x, self.y], self.Track.track_points[new_pt]) <= gap:
+        if math.dist([self.x, self.y], self.track.track_points[new_pt]) <= gap:
             self.pt = new_pt
-            self.x = self.Track.track_points[new_pt][0]
-            self.y = self.Track.track_points[new_pt][1]
+            self.x = self.track.track_points[new_pt][0]
+            self.y = self.track.track_points[new_pt][1]
             if new_pt == 0:
                 self.lap += 1
                 self.sec_times = self.race_lap_data.sector_times(self.lap, self.name)
@@ -165,11 +150,11 @@ class Car:
 
 
 class Race:
-    def __init__(self, track_name, year):
+    def __init__(self, year):
         self.track_obj = Track(TRACKNAME)
-        self.track_name = track_name
+        self.track_name = TRACKNAME
         self.year = year
-        self.race_lap_data = sector_times.LapData(year, track_name, 'R')
+        self.race_lap_data = sector_times.LapData(year, TRACKNAME, 'R')
         self.drivers = self.race_lap_data.drivers_list()
         self.cars = []
         self.init_drivers()
@@ -183,6 +168,7 @@ class Race:
     def race(self):
         done = False
         waiting = True
+        updates = 0
         while waiting:
             screen.fill((0, 0, 0))
             for event in pygame.event.get():
@@ -194,9 +180,11 @@ class Race:
             self.track_obj.update()
             for i in self.cars:
                 i.stay()
-            pygame.display.flip()
-            clock.tick(FRAMERATE)
-
+            if updates == 0:
+                pygame.display.flip()
+            updates = (updates + 1) % SPEEDMULT
+            clock.tick(FRAMERATE*SPEEDMULT)
+        updates = 0
         while not done:
             screen.fill((0, 0, 0))
             self.track_obj.update()
@@ -205,14 +193,16 @@ class Race:
                     done = True  # quits canvas
             for i in self.cars:
                 i.move()
-            pygame.display.flip()
-            clock.tick(FRAMERATE)
+            if updates == 0:
+                pygame.display.flip()
+            updates = (updates + 1) % SPEEDMULT
+            clock.tick(FRAMERATE*SPEEDMULT)
         pygame.quit()
 
 
 # def race():
 #     done = False
-#     Bahrain = Track()
+#     Bahrain = track()
 #     names = ['BOT', 'HAM', 'VER']
 #     times = {'BOT': [4, 5, 6], 'HAM': [2, 2, 2], 'VER': [2, 3, 2]}
 #     drivers = []
@@ -237,5 +227,5 @@ class Race:
 
 
 if __name__ == "__main__":
-    Bahr_race = Race(TRACKNAME, YEAR)
+    Bahr_race = Race(YEAR)
     Bahr_race.race()

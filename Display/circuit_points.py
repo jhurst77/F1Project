@@ -33,7 +33,6 @@ def return_coords(trackname):
     with open(file) as f:
         gj = geojson.load(f)
     coords = list(geojson.utils.coords(gj))
-    # coords = gj['features'][0]['geometry']['coordinates']
     os.chdir(cwd)
     return coords
 
