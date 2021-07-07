@@ -103,47 +103,24 @@ def normCoords(coords):
     return normCoords
 
 
-def vert_shiftX(coords):
-    """function that finds how much to move coordinates in."""
-    extrms = findMinMax(normCoords(coords))
-    return 1 - extrms[1]
+# def sec_dist(self, sec_no):
+#     """"Function that calculates the distance of a sector (ranging from 1-3). Can produce a list of all the
+#     distances using lists."""
+#     sec_index = sec_no - 1  # indices start from 0 not 1
+#     sec_dist_output = 0
+#     start_pt = self.sec_boundary_pts[sec_index - 1]
+#     end_pt = self.sec_boundary_pts[sec_index]
+#     pt = start_pt
+#     amt_pts = len(self.track_points)
+#     while (pt % amt_pts) != end_pt:  # while not at end point of sector
+#         sec_dist_output += math.dist(self.track_points[pt], self.track_points[pt - 1])
+#         pt += 1
+#     return sec_dist_output  # returns float value
 
 
-def vert_shiftY(coords):
-    """function that finds how much smaller the Y dimensions are than the X. This
-    can then be used to center the drawing when the track is drawn."""
-    extrms = findMinMax(normCoords(coords))
-    return 1 - extrms[3]
-
-
-def sector_distance(coords, secNumber):
-    """returns the distance (in units that are the same as the coords given) of
-    that sector (from the start line???)"""
-    sector_distance = 0
-    for points in range(secNumber - 1):
-        sector_distance = sector_distance + \
-                          distance(coords[points][0], coords[points][1],
-                                   coords[points + 1][0], coords[points + 1][1])
-    return sector_distance
-
-def sec_dist(self, sec_no):
-    """"Function that calculates the distance of a sector (ranging from 1-3). Can produce a list of all the
-    distances using lists."""
-    sec_index = sec_no - 1  # indices start from 0 not 1
-    sec_dist_output = 0
-    start_pt = self.sec_boundary_pts[sec_index - 1]
-    end_pt = self.sec_boundary_pts[sec_index]
-    pt = start_pt
-    amt_pts = len(self.track_points)
-    while (pt % amt_pts) != end_pt:  # while not at end point of sector
-        sec_dist_output += math.dist(self.track_points[pt], self.track_points[pt - 1])
-        pt += 1
-    return sec_dist_output  # returns float value
-
-
-def distance(x1, y1, x2, y2):
-    """ simple function that returns the distance between two point pairs"""
-    return math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+# def distance(x1, y1, x2, y2):
+#     """ simple function that returns the distance between two point pairs"""
+#     return math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
 
 
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
@@ -163,7 +140,7 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
         y = (0.5 * WINHEIGHT * (Y_ave_pos+1)) - (mapReach * track[point][1])
         track_points.append([x,y])
         # if rotation == '1Clockwise':
-        #     track_points.append([WINWIDTH - y, x - .25*WINHEIGHT])
+        #     track_points.append([WINWIDTH - y, x - WINHEIGHT])
         # elif rotation == 'OG':
         #     track_points.append([x, y])
         # elif rotation == '2Clockwise':
