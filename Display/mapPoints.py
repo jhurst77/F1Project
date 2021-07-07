@@ -7,29 +7,32 @@ import circuit_points
 # FUNCTIONS USED LATER TO TIDY THE OUTPUTTED DATA
 ##############################################################################
 
-sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [20, 40, 0], 'Silverstone': [20, 40, 0]}
+sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [13, 50, 0], 'Silverstone': [20, 50, 0]}
 
 def testing_sectors(TRACKNAME, sector_to_test):
     """Function used to visually test the positions of the sector boundaries. Pretty shoddily made function but works.
     Would like to find a way to automatically have sector points."""
-    CANWIDTH = 800  # window width
-    CANHEIGHT = 800  # window width
+    CANWIDTH = 850  # window width
+    CANHEIGHT = 850  # window width
     FRAMERATE = 30
     OFFSET = 30  # map offset from edge
 
     pygame.init()
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((CANWIDTH, CANHEIGHT))
+    sec_index = sector_to_test - 1
 
-    pt = sectors[TRACKNAME][sector_to_test - 1]
+    pt = sectors[TRACKNAME][sec_index]
     track_points = generate_points(CANWIDTH, CANHEIGHT, OFFSET, TRACKNAME)
+
     def draw_map():
         for j in range(len(track_points)):
             pygame.draw.line(screen, 'blue', track_points[j - 1], track_points[j])
+
     def car_stay():
         x, y = track_points[pt][0], track_points[pt][1]
-        # pygame.draw.circle(screen, [255, 255, 255], (x, y), 5)
-        pygame.draw.circle(screen, [255, 255, 255], (400, 500), 5)
+        pygame.draw.circle(screen, [255, 255, 255], (x, y), 5)
+
     def update():
         draw_map()
         car_stay()
@@ -45,6 +48,17 @@ def testing_sectors(TRACKNAME, sector_to_test):
             pygame.display.flip()
             clock.tick(FRAMERATE)
         pygame.quit()
+
+    # def draw_box():
+    #     minX, maxX, minY, maxY = findMinMax(track_points)
+    #     bleft = (minX, maxY)
+    #     bright = (maxX, maxY)
+    #     tleft = (minX, minY)
+    #     tright = (maxX, minY)
+    #     pygame.draw.line(screen, 'green', bleft, bright)
+    #     pygame.draw.line(screen, 'blue', bright, tright)
+    #     pygame.draw.line(screen, 'yellow', tright, tleft)
+    #     pygame.draw.line(screen, 'orange', tleft, bleft)
     test()
 
 def findMinMax(coords):
@@ -87,7 +101,6 @@ def normCoords(coords):
         xPart = (((pairs[0] - minX) / divisor) - 0.5) * 2
         yPart = (((pairs[1] - minY) / divisor) - 0.5) * 2
         normCoords.append([xPart, yPart])
-    print(normCoords)
     return normCoords
 
 
@@ -137,14 +150,18 @@ def distance(x1, y1, x2, y2):
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     point = 0
     track = normCoords(circuit_points.return_coords(TRACKNAME))
+    minX, maxX, minY, maxY = findMinMax(track)
+    X_ave_pos = (minX + maxX)/2
+    Y_ave_pos = (minY + maxY)/2
+    print(X_ave_pos, Y_ave_pos)
     mapRangeX = WINWIDTH - 2 * OFFSET
     mapRangeY = WINHEIGHT - 2 * OFFSET
     mapReach = min(mapRangeX, mapRangeY)/2
     rotation = '2Clockwise'
     track_points = []
     while point in range(len(track)):
-        x = WINWIDTH * track[point][0]
-        y = WINHEIGHT - (WINHEIGHT * track[point][1])
+        x = (0.5 * WINWIDTH * (X_ave_pos+1)) + (mapReach * track[point][0])
+        y = (0.5 * WINHEIGHT * (Y_ave_pos+1)) - (mapReach * track[point][1])
         track_points.append([x,y])
         # if rotation == '1Clockwise':
         #     track_points.append([WINWIDTH - y, x - .25*WINHEIGHT])
@@ -158,4 +175,4 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     return track_points
 
 if __name__ == '__main__':
-    testing_sectors('Barcelona', 1)
+    testing_sectors('Spielberg', 2)
