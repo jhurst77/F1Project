@@ -16,28 +16,28 @@ class LapData:
         If the driver hasn't retired, it produces a list with [time for sector 1, time for sector 2, time for sector 3,
         time for pit stop (if pitting)]"""
         lap_index = lap_no - 1
-        Driver = self.track_laps.pick_driver(DriverID)
+        driver = self.track_laps.pick_driver(DriverID)
         try:
             if lap_no == 1:
                 # if starting the race
-                start_data = Driver.iloc[lap_index]  # data for lap 1
+                start_data = driver.iloc[lap_index]  # data for lap 1
                 start_time = start_data.LapStartTime  # Lap 1 start time
                 sec2_fin_time = start_data.Sector2SessionTime
                 sec2_time = start_data.Sector2Time
                 sec1 = (sec2_fin_time - start_time - sec2_time).total_seconds()
-                sec2 = Driver['Sector2Time'].iloc[0].total_seconds()
-                sec3 = Driver['Sector3Time'].iloc[0].total_seconds()
+                sec2 = driver['Sector2Time'].iloc[0].total_seconds()
+                sec3 = driver['Sector3Time'].iloc[0].total_seconds()
                 pit_time = 0  # you don't pit before the race lol
-            elif Driver.iloc[lap_index].PitOutTime is not pd.NaT:
+            elif driver.iloc[lap_index].PitOutTime is not pd.NaT:
                 # if pitting
-                pit_time = Driver['PitOutTime'].iloc[lap_index].total_seconds() - Driver['PitInTime'].iloc[lap_index-1].total_seconds()
-                sec1 = Driver['Sector1Time'].iloc[lap_index].total_seconds() - pit_time
-                sec2 = Driver['Sector2Time'].iloc[lap_index].total_seconds()
-                sec3 = Driver['Sector3Time'].iloc[lap_index].total_seconds()
+                pit_time = driver['PitOutTime'].iloc[lap_index].total_seconds() - driver['PitInTime'].iloc[lap_index - 1].total_seconds()
+                sec1 = driver['Sector1Time'].iloc[lap_index].total_seconds() - pit_time
+                sec2 = driver['Sector2Time'].iloc[lap_index].total_seconds()
+                sec3 = driver['Sector3Time'].iloc[lap_index].total_seconds()
             else:
-                sec1 = Driver['Sector1Time'].iloc[lap_index].total_seconds()
-                sec2 = Driver['Sector2Time'].iloc[lap_index].total_seconds()
-                sec3 = Driver['Sector3Time'].iloc[lap_index].total_seconds()
+                sec1 = driver['Sector1Time'].iloc[lap_index].total_seconds()
+                sec2 = driver['Sector2Time'].iloc[lap_index].total_seconds()
+                sec3 = driver['Sector3Time'].iloc[lap_index].total_seconds()
                 pit_time = 0
             return [sec1, sec2, sec3, pit_time]
         except IndexError:
@@ -57,10 +57,48 @@ class LapData:
         team = Driver['Team'].iloc[0]
         return team
 
+    def all_sectors_ordered(self, DriverID):
+        """produces a list with the time (in seconds) for every sector after the start."""
+        event_times = []
+        driver = self.track_laps.pick_driver(DriverID)
+        race_start_time = driver.iloc[0].LapStartTime
+        for rows in driver.index:
+            rst = race_start_time
+            row_info = driver.loc[rows]
+
+            if row_info.PitOutTime is not pd.NaT and row_info.LapNumber != 1:
+                # if pitting
+                s1_event_end = row_info.PitOutTime - rst
+                box = True
+            elif row_info.LapNumber == 1:
+                # if lap 1
+                s1_event_end = rst - rst
+                box = False
+            else:
+                # if normal lap
+                s1_event_end = row_info.Sector1SessionTime - rst
+                box = False
+            s1_event_end = s1_event_end.total_seconds()
+            event_times.append([s1_event_end, 'S1', row_info.LapNumber, box])
+
+            s2_end = row_info.Sector2SessionTime - rst
+            s2_end = s2_end.total_seconds()
+            event_times.append([s2_end, 'S2', row_info.LapNumber, False])
+
+            if row_info.PitInTime is not pd.NaT:
+                # if going into pits
+                s3_event_end = row_info.PitInTime - rst
+            else:
+                # if normal lap
+                s3_event_end = row_info.Sector3SessionTime - rst
+            s3_event_end = s3_event_end.total_seconds()
+            event_times.append([s3_event_end, 'S3', row_info.LapNumber, False])
+        event_times.sort()
+        return event_times
+
+
+
 
 if __name__ == '__main__':
-    Bahr_Data = LapData(2021, 'Bahrain', 'R')
-    VER = Bahr_Data.track_laps.pick_driver('VER')
-    PER = Bahr_Data.track_laps.pick_driver('PER')
-    print(VER['LapStartTime'].iloc[0])
-    print(PER['LapStartTime'].iloc[0])
+    Austria = LapData(2020, 'Austria', 'R')
+    print(Austria.all_sectors_ordered('VER'))
