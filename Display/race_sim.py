@@ -25,7 +25,6 @@ class Track:
         self.name = name
         self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
         self.sec_dists = [self.sec_dist(1), self.sec_dist(2), self.sec_dist(3)]  # distances for each sector
-        print(self.sec_dists)
 
     def draw_map(self):
         """ simple function that draws the map"""
@@ -65,16 +64,19 @@ class Car:
         self.name = name
         self.sec_times = sec_times
         self.pt = 0
+        self.lap = 0
         self.x = track.track_points[self.pt][0]  # starting point of car x
         self.y = track.track_points[self.pt][1]  # starting point of car y
+
         self.team_name = data.team_name(name)
         self.colour = team_colours.team_colours[int(YEAR)][self.team_name]
         self.track = track
-        self.lap = 0
+
         self.BOX = False
         self.BOX_start_time = 0
         self.outside_BOX = True
         self.retired = False
+
         pygame.draw.circle(screen, self.colour, (self.x, self.y), 5)
 
     def car_speed(self, current_sector):
@@ -166,6 +168,7 @@ class Race:
     def race(self):
         done = False
         waiting = True
+
         updates = 0
         while waiting:
             screen.fill((0, 0, 0))
@@ -182,6 +185,7 @@ class Race:
                 pygame.display.flip()
             updates = (updates + 1) % SPEEDMULT
             clock.tick(FRAMERATE*SPEEDMULT)
+
         updates = 0
         while not done:
             screen.fill((0, 0, 0))
