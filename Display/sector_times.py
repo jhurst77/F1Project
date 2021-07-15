@@ -155,11 +155,13 @@ class LapData:
     def find_sector_number(self, time, secs_ordered):
         """finds the sector number for a given time."""
         sec_number = 0
+        try:
+            while secs_ordered[sec_number]['End time'] <= time:
+                sec_number += 1
 
-        while secs_ordered[sec_number]['End time'] <= time:
-            sec_number += 1
-
-        return sec_number
+            return sec_number
+        except IndexError:
+            return 'Finished'
 
 
 
@@ -168,7 +170,7 @@ class LapData:
 if __name__ == '__main__':
     Austria = LapData(2021, 'Bahrain', 'R')
     VER = Austria.all_sectors_ordered('VER')
-    time = 86
+    time = 1e9
     print('VER sectors is, ', VER)
     print('time is, ', time)
     print(Austria.find_sector_number(time, VER))
