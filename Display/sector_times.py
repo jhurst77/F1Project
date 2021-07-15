@@ -1,6 +1,7 @@
 import fastf1 as ff1
 import pandas as pd
 import os
+import math
 
 ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
 
@@ -62,43 +63,113 @@ class LapData:
         event_times = []
         driver = self.track_laps.pick_driver(DriverID)
         race_start_time = driver.iloc[0].LapStartTime
+        retired = False
         for rows in driver.index:
             rst = race_start_time
             row_info = driver.loc[rows]
 
-            if row_info.PitOutTime is not pd.NaT and row_info.LapNumber != 1:
-                # if pitting
-                s1_event_end = row_info.PitOutTime - rst
-                box = True
-            elif row_info.LapNumber == 1:
+            ## Sector 1 ##
+            sec1 = dict()
+            if row_info.LapNumber == 1:
                 # if lap 1
-                s1_event_end = rst - rst
-                box = False
+                s1_event_end = row_info.Sector2SessionTime - row_info.Sector2Time - rst
             else:
                 # if normal lap
                 s1_event_end = row_info.Sector1SessionTime - rst
-                box = False
+
             s1_event_end = s1_event_end.total_seconds()
-            event_times.append([s1_event_end, 'S1', row_info.LapNumber, box])
+            sec1['End time'] = s1_event_end
+            sec1['Sector'] = 1
+            sec1['Lap number'] = row_info.LapNumber
+            sec1['In box'] = False
+            sec1['Retired'] = retired
 
-            s2_end = row_info.Sector2SessionTime - rst
-            s2_end = s2_end.total_seconds()
-            event_times.append([s2_end, 'S2', row_info.LapNumber, False])
+            event_times.append(sec1)
 
-            if row_info.PitInTime is not pd.NaT:
+            ## Sector 2 ##
+            sec2 = dict()
+            s2_event_end = row_info.Sector2SessionTime - rst
+            s2_event_end = s2_event_end.total_seconds()
+
+            sec2['End time'] = s2_event_end
+            sec2['Sector'] = 2
+            sec2['Lap number'] = row_info.LapNumber
+            sec2['In box'] = False
+            sec2['Retired'] = retired
+            event_times.append(sec2)
+
+            ## Sector 3 ##
+            if row_info.PitInTime is not pd.NaT and row_info.LapNumber != 1:
+                sec3 = dict()
                 # if going into pits
-                s3_event_end = row_info.PitInTime - rst
+                s3_event_end = row_info.PitInTime - rst  # pit in time
+                s3_event_end = s3_event_end.total_seconds()
+
+                sec3['End time'] = s3_event_end
+                sec3['Sector'] = 3
+                sec3['Lap number'] = row_info.LapNumber
+                sec3['In box'] = False
+                sec3['Retired'] = retired
+                event_times.append(sec3)
+
+                ## Pitting ##
+                pit = dict()
+                try:
+                    PitOutTime = driver.loc[rows+1].PitOutTime - rst
+                    PitOutTime = PitOutTime.total_seconds()
+
+                    pit['End time'] = PitOutTime
+                    pit['Sector'] = 'BOX'
+                    pit['Lap number'] = row_info.LapNumber
+                    pit['In box'] = True
+                    sec3['Retired'] = retired
+                    event_times.append(pit)
+                except KeyError:
+                    retired = True
+
+                    PitOutTime = row_info.Sector3SessionTime - rst
+                    PitOutTime = PitOutTime.total_seconds()
+
+                    pit['End time'] = PitOutTime
+                    pit['Sector'] = 'BOX'
+                    pit['Lap number'] = row_info.LapNumber
+                    pit['In box'] = True
+                    sec3['Retired'] = retired
+                    event_times.append(pit)
             else:
                 # if normal lap
+                sec3 = dict()
                 s3_event_end = row_info.Sector3SessionTime - rst
-            s3_event_end = s3_event_end.total_seconds()
-            event_times.append([s3_event_end, 'S3', row_info.LapNumber, False])
-        event_times.sort()
-        return event_times
+                s3_event_end = s3_event_end.total_seconds()
+
+                sec3['End time'] = s3_event_end
+                sec3['Sector'] = 3
+                sec3['Lap number'] = row_info.LapNumber
+                sec3['In box'] = False
+                sec3['Retired'] = retired
+                event_times.append(sec3)
+
+        event_times_sorted = sorted(event_times, key = lambda item: item['End time'])
+        return event_times_sorted
+
+    def find_sector_number(self, time, secs_ordered):
+        """finds the sector number for a given time."""
+        sec_number = 0
+
+        while secs_ordered[sec_number]['End time'] <= time:
+            sec_number += 1
+
+        return sec_number
+
 
 
 
 
 if __name__ == '__main__':
-    Austria = LapData(2020, 'Austria', 'R')
-    print(Austria.all_sectors_ordered('VER'))
+    Austria = LapData(2021, 'Bahrain', 'R')
+    VER = Austria.all_sectors_ordered('VER')
+    time = 86
+    print('VER sectors is, ', VER)
+    print('time is, ', time)
+    print(Austria.find_sector_number(time, VER))
+
