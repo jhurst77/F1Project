@@ -1,6 +1,9 @@
 import math
 import pygame
 import circuit_points
+import fastf1 as ff1
+import os
+import numpy as np
 
 
 ##############################################################################
@@ -103,6 +106,42 @@ def normCoords(coords):
         normCoords.append([xPart, yPart])
     return normCoords
 
+def new_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
+    ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
+    session = ff1.get_session(YEAR, TRACKNAME, 'Q')
+    laps = session.load_laps(with_telemetry=True)
+    lap = laps.pick_fastest()
+    tel = lap.get_telemetry()
+    x = np.array(tel['X'].values)
+    y = np.array(tel['Y'].values)
+    points = np.array([x,y]).T
+    track = normCoords(points)
+    minX, maxX, minY, maxY = findMinMax(track)
+    X_ave_pos = (minX + maxX) / 2
+    Y_ave_pos = (minY + maxY) / 2
+    print(X_ave_pos, Y_ave_pos)
+    mapRangeX = WINWIDTH - 2 * OFFSET
+    mapRangeY = WINHEIGHT - 2 * OFFSET
+    mapReach = min(mapRangeX, mapRangeY) / 2
+    rotation = 'OG'  # TODO: integrate this into function better, make not strings, make not hardcoded.
+    track_points = []
+    point = 0
+    while point in range(len(track)):
+        x = (0.5 * WINWIDTH * (-X_ave_pos + 1)) + (mapReach * track[point][0])
+        y = (0.5 * WINHEIGHT * (Y_ave_pos + 1)) - (mapReach * track[point][1])
+        # track_points.append([x,y])
+        if rotation == '1Clockwise':
+            track_points.append([WINWIDTH - y, x - WINHEIGHT])
+        elif rotation == 'OG':
+            track_points.append([x, y])
+        elif rotation == '2Clockwise':
+            track_points.append([WINWIDTH - x, WINHEIGHT - y])
+        elif rotation == '1AntiClock':
+            track_points.append([y, WINHEIGHT - x])
+        point += 1
+    return track_points
+
+
 
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     point = 0
@@ -132,4 +171,4 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     return track_points
 
 if __name__ == '__main__':
-    testing_sectors('Barcelona', 2)
+    new_generate_points(800, 800, 50, 'Austria', 2020)

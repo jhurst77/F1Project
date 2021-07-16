@@ -10,9 +10,9 @@ WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
 FRAMERATE = 30
 OFFSET = 50  # map offset from edge
-TRACKNAME = 'Spielberg'
-RACE = 'Austria'
-YEAR = 2020
+TRACKNAME = 'Sakhir'
+RACE = 'Bahrain'
+YEAR = 2021
 SPEEDMULT = 15  # speed sim up or down from real time
 
 pygame.init()
@@ -23,7 +23,7 @@ class Track:
     def __init__(self, name):
         self.sec_boundary_pts = mapPoints.sectors[TRACKNAME]
         self.name = name
-        self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
+        self.track_points = mapPoints.new_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
         self.sec_dists = [self.sec_dist(1), self.sec_dist(2), self.sec_dist(3)]  # distances for each sector
 
     def draw_map(self):
