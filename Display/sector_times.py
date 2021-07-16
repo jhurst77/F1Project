@@ -168,10 +168,7 @@ class LapData:
 
 
 if __name__ == '__main__':
-    Austria = LapData(2021, 'Bahrain', 'R')
+    Austria = LapData(2020, 'Austria', 'R')
     VER = Austria.all_sectors_ordered('VER')
-    time = 1e9
     print('VER sectors is, ', VER)
-    print('time is, ', time)
-    print(Austria.find_sector_number(time, VER))
 
