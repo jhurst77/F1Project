@@ -2,6 +2,7 @@ import fastf1 as ff1
 import pandas as pd
 import os
 import numpy as np
+import mapPoints
 import datetime
 import math
 
@@ -181,6 +182,8 @@ class LapData:
         y = np.array(tel['Y'].values)
         time_array = np.array(tel['Date'])
         points = np.array([x, y]).T
+        points = mapPoints.normCoords(points)
+        points = mapPoints.make_track(points, 800, 800, 50)
         return points, time_array
     
     def return_index(self, time, time_array):
@@ -202,8 +205,5 @@ if __name__ == '__main__':
     Austria = LapData(2020, 'Austria', 'R')
     points, time_array = Austria.race_points_times('VER')
     index = Austria.return_index(5000, time_array)
-    print(len(time_array))
-    print(index)
-    index = Austria.return_index(0.125, time_array)
-    print(index)
+    print(points[index])
 

@@ -14,7 +14,7 @@ OFFSET = 50  # map offset from edge
 TRACKNAME = 'Sakhir'
 RACE = 'Bahrain'
 YEAR = 2021
-SPEEDMULT = 15  # speed sim up or down from real time
+SPEEDMULT = 1  # speed sim up or down from real time
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -71,6 +71,7 @@ class Car:
 
         self.team_name = self.data.team_name(car_name)
         self.colour = team_colours.team_colours[int(YEAR)][self.team_name]
+        print(self.name, ' init')
 
         pygame.draw.circle(screen, self.colour, (self.x, self.y), 5)
 
@@ -125,7 +126,6 @@ class Race:
         done = False
         waiting = True
 
-        updates = 0
         while waiting:
             screen.fill((0, 0, 0))
             for event in pygame.event.get():
@@ -137,16 +137,11 @@ class Race:
             self.track_obj.update()
             for i in self.cars:
                 i.stay()
-            if updates == 0:
-                pygame.display.flip()
-            updates = (updates + 1) % SPEEDMULT
+            pygame.display.flip()
             clock.tick(FRAMERATE*SPEEDMULT)
 
-        start_time = time.time()
-        updates = 0
+        time_running = 0
         while not done:
-            time_now = time.time()
-            time_running = time_now - start_time
             screen.fill((0, 0, 0))
             self.track_obj.update()
             for event in pygame.event.get():
@@ -154,10 +149,8 @@ class Race:
                     done = True  # quits canvas
             for i in self.cars:
                 i.update(time_running)
-            if updates == 0:
-                pygame.display.flip()
-            updates = (updates + 1) % SPEEDMULT
-            # time.sleep(1/(FRAMERATE*SPEEDMULT))
+            pygame.display.flip()
+            time_running += 1/(FRAMERATE*SPEEDMULT)
             clock.tick(FRAMERATE*SPEEDMULT)
         pygame.quit()
 
