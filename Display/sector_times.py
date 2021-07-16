@@ -1,6 +1,8 @@
 import fastf1 as ff1
 import pandas as pd
 import os
+import numpy as np
+import datetime
 import math
 
 ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
@@ -10,7 +12,16 @@ class LapData:
     """A class for the data for all drivers for a specific race session."""
     def __init__(self, year, race, session):
         self.track_session = ff1.get_session(year, race, session)
-        self.track_laps = self.track_session.load_laps()
+        self.track_laps = self.track_session.load_laps(with_telemetry=True)
+        self.ref_time = self.get_reference()
+        # self.tel = self.track_laps.get_telemetry()
+
+    def get_reference(self):
+        ref_driver = self.drivers_list()[0]
+        ref_driver_laps = self.track_laps.pick_driver(ref_driver)
+        ref_tel = ref_driver_laps.get_telemetry()
+        ref_time = ref_tel.iloc[0].Date
+        return ref_time
 
     def sector_times(self, lap_no, DriverID):
         """Produces the sector times for a driver for a given lap.
@@ -163,12 +174,35 @@ class LapData:
         except IndexError:
             return 'Finished'
 
+    def race_points_times(self, DriverID):
+        driver = self.track_laps.pick_driver(DriverID)
+        tel = driver.get_telemetry()
+        x = np.array(tel['X'].values)
+        y = np.array(tel['Y'].values)
+        time_array = np.array(tel['Date'])
+        points = np.array([x, y]).T
+        return points, time_array
+    
+    def return_index(self, time, time_array):
+        timedelta = pd.Timedelta(time, 's')
+        compare_time = timedelta + self.ref_time
+        max_indices = len(time_array)
+        lower_index = 0
+        for indices in range(max_indices):
+            if time_array[indices] < compare_time:
+                lower_index = indices
+        return lower_index
+        
+
 
 
 
 
 if __name__ == '__main__':
     Austria = LapData(2020, 'Austria', 'R')
-    VER = Austria.all_sectors_ordered('VER')
-    print('VER sectors is, ', VER)
+    points, time_array = Austria.race_points_times('VER')
+    index = Austria.return_index(500, time_array)
+    print(index)
+    index = Austria.return_index(0.125, time_array)
+    print(index)
 
