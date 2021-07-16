@@ -201,7 +201,8 @@ class LapData:
 if __name__ == '__main__':
     Austria = LapData(2020, 'Austria', 'R')
     points, time_array = Austria.race_points_times('VER')
-    index = Austria.return_index(500, time_array)
+    index = Austria.return_index(5000, time_array)
+    print(len(time_array))
     print(index)
     index = Austria.return_index(0.125, time_array)
     print(index)

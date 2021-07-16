@@ -1,3 +1,4 @@
+import pandas as pd
 import pygame
 import sector_times
 import team_colours
@@ -61,14 +62,10 @@ class Car:
     def __init__(self, car_name, track, lap_data):
         self.name = car_name
         self.data = lap_data
-        # self.data = sector_times.LapData(YEAR, TRACKNAME, 'R')
-        self.ord_sec_data = self.data.all_sectors_ordered(car_name)
+        self.coords, self.time_arr = self.data.race_points_times(self.name)
 
-        self.pt = 0
-        # self.lap = 0
-        self.current_sec = 1
-        self.x = track.track_points[self.pt][0]
-        self.y = track.track_points[self.pt][1]
+        self.x = self.coords[0][0]
+        self.y = self.coords[0][1]
 
         self.track = track
 
@@ -76,100 +73,41 @@ class Car:
         self.colour = team_colours.team_colours[int(YEAR)][self.team_name]
 
         pygame.draw.circle(screen, self.colour, (self.x, self.y), 5)
-        self.time = 0
-        self.running_index = 0
 
     def stay(self):
+        self._draw()
+
+    def update(self, runtime):
+        lower_index = self.data.return_index(runtime, self.time_arr)
+        upper_index = self._find_upper_index(lower_index)
+        fraction = self._get_fraction(upper_index, lower_index, runtime)
+
+        delta_x = self.coords[upper_index][0] - self.coords[lower_index][0]
+        delta_y = self.coords[upper_index][1] - self.coords[lower_index][1]
+
+        self.x = self.coords[lower_index][0] + delta_x * fraction
+        self.y = self.coords[lower_index][1] + delta_y * fraction
+        self._draw()
+
+    def _draw(self):
         pygame.draw.circle(screen, self.colour, (self.x, self.y), 5)
 
-    def update(self, time):
-        self.time = time
-        self.sec_index = self.data.find_sector_number(self.time, self.ord_sec_data)
-        if self._find_if_moving():
-            time_for_sector = self._get_sector_duration()
-            current_sec = self.ord_sec_data[self.sec_index]['Sector']
-            sec_frame_speed = self.track.sec_dists[current_sec-1]/(time_for_sector*FRAMERATE)
-            move_x, move_y = self._calc_speed_components(sec_frame_speed)
-            self.x += move_x
-            self.y += move_y
-            pygame.draw.circle(screen, self.colour, (self.x, self.y), 5)
-            self._update_if_close(sec_frame_speed)
-            # self._update_if_new_sec()
+    def _get_fraction(self, upper_index, lower_index, runtime):
+        points_gap = self.time_arr[upper_index] - self.time_arr[lower_index]
+        timedelta = pd.Timedelta(runtime, 's')
+        compare_time = timedelta + self.data.ref_time
+        frac_gap = compare_time - self.time_arr[lower_index]
+        fraction = frac_gap/points_gap
+        return fraction
+
+    def _find_upper_index(self, lower_index):
+        """if at end, then just same, so will be still"""
+        if lower_index == len(self.time_arr)-1:
+            upper_index = lower_index
         else:
-            if self._retired():
-                print(self.name, ' is retired')
-                before_x, before_y = self.x, self.y
-                self.x = self.track.track_points[self.pt][0] + 50
-                self.y = self.track.track_points[self.pt][1] + 50
-                self.stay()
-                self.x = before_x
-                self.y = before_y
-            elif self._in_box():
-                print(self.name, " is boxing")
-                before_x, before_y = self.x, self.y
-                self.x = self.track.track_points[self.pt][0] + 20
-                self.y = self.track.track_points[self.pt][1] + 20
-                self.stay()
-                self.x = before_x
-                self.y = before_y
-            else:
-                print('weird stuff going on, ', self.sec_index)
+            upper_index = lower_index + 1
+        return upper_index
 
-    def _find_if_moving(self):
-        in_box = self._in_box()
-        retired = self._retired()
-        on_track = not (in_box or retired)
-        return on_track
-
-    def _in_box(self):
-        return self.ord_sec_data[self.sec_index]['In box']
-
-    def _retired(self):
-        return self.ord_sec_data[self.sec_index]['Retired']
-
-    def _get_sector_duration(self):
-        if self.sec_index == 0:
-            prev_time = 0
-        else:
-            prev_time = self.ord_sec_data[self.sec_index - 1]['End time']
-        next_time = self.ord_sec_data[self.sec_index]['End time']
-        sec_time = next_time - prev_time
-        return sec_time
-
-    def _calc_speed_components(self, speed):
-        x_prop, y_prop = self._calc_direction_proportions()
-        x = speed * x_prop
-        y = speed * y_prop
-        return x, y
-
-    def _calc_direction_proportions(self):
-        size = len(self.track.track_points) - 1
-        next_pt = (self.pt + 1) % size
-        abs_dist = math.dist(self.track.track_points[next_pt], self.track.track_points[self.pt])
-        x_dist = (self.track.track_points[next_pt][0] - self.track.track_points[self.pt][0])
-        y_dist = (self.track.track_points[next_pt][1] - self.track.track_points[self.pt][1])
-        x_prop = x_dist / abs_dist
-        y_prop = y_dist / abs_dist
-        return x_prop, y_prop
-
-    def _update_if_close(self, speed):
-        gap = speed
-        size = len(self.track.track_points) - 1  # mod input to loop through the track points
-        new_pt = (self.pt + 1) % size
-        if math.dist([self.x, self.y], self.track.track_points[new_pt]) <= gap:
-            self.pt = new_pt
-            self.x = self.track.track_points[new_pt][0]
-            self.y = self.track.track_points[new_pt][1]
-
-    def _update_if_new_sec(self):
-        if self.running_index < self.sec_index:
-            new_sector = self.ord_sec_data[self.sec_index]['Sector']
-            if type(new_sector) is int:
-                print('new sec ', new_sector)
-                self.pt = self.track.sec_boundary_pts[new_sector % 3]
-                self.x = self.track.track_points[self.pt][0]
-                self.y = self.track.track_points[self.pt][1]
-            self.running_index += 1
 
 class Race:
     def __init__(self):
@@ -225,8 +163,8 @@ class Race:
 
 
 if __name__ == "__main__":
-    # Bahr_race = Race(YEAR)
+    # Bahr_race = Race()
     # Test_car = Car('VER', Bahr_race.track_obj, Bahr_race.race_lap_data)
-    # print(Test_car._get_time_sector(100))
+    # Test_car.update(1)
     Bahr_race = Race()
     Bahr_race.race()
