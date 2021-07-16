@@ -116,6 +116,9 @@ def new_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
     y = np.array(tel['Y'].values)
     points = np.array([x,y]).T
     track = normCoords(points)
+    return make_track(track, WINWIDTH, WINHEIGHT, OFFSET)
+
+def make_track(track, WINWIDTH, WINHEIGHT, OFFSET):
     minX, maxX, minY, maxY = findMinMax(track)
     X_ave_pos = (minX + maxX) / 2
     Y_ave_pos = (minY + maxY) / 2
