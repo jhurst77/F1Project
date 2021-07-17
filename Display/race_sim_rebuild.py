@@ -9,12 +9,12 @@ import time
 # ###### Constants ###### #
 WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
-FRAMERATE = 15
+FRAMERATE = 60
 OFFSET = 50  # map offset from edge
 TRACKNAME = 'Sakhir'
 RACE = 'Bahrain'
-YEAR = 2021
-SPEEDMULT = 15  # speed sim up or down from real time
+YEAR = 2020
+SPEEDMULT = 2.5  # speed sim up or down from real time
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -24,13 +24,19 @@ class Track:
     def __init__(self, name):
         self.sec_boundary_pts = mapPoints.sectors[TRACKNAME]
         self.name = name
-        self.track_points = mapPoints.new_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
+        self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
+        self.race_line_points = mapPoints.rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
         self.sec_dists = [self.sec_dist(1), self.sec_dist(2), self.sec_dist(3)]  # distances for each sector
 
-    def draw_map(self):
+    def draw_map(self, width):
         """ simple function that draws the map"""
         for j in range(len(self.track_points)):
-            pygame.draw.line(screen, 'blue', self.track_points[j - 1], self.track_points[j])
+            pygame.draw.line(screen, 'blue', self.track_points[j - 1], self.track_points[j], width)
+
+    def draw_rcing_line(self):
+        """ simple function that draws the map"""
+        for j in range(len(self.race_line_points)):
+            pygame.draw.line(screen, 'red', self.race_line_points[j - 1], self.race_line_points[j], 1)
 
     def sec_dist(self, sec_no):
         """"Function that calculates the distance of a sector (ranging from 1-3). Can produce a list of all the
@@ -55,8 +61,11 @@ class Track:
         else:
             return 3
 
-    def update(self):
-        self.draw_map()
+    def rce_line(self):
+        self.draw_rcing_line()
+
+    def update(self, width):
+        self.draw_map(width)
 
 class Car:
     def __init__(self, car_name, track, lap_data):
@@ -69,6 +78,7 @@ class Car:
 
         self.x = self.coords[0][0]
         self.y = self.coords[0][1]
+        self.indices_checked = 0
 
         self.track = track
 
@@ -98,11 +108,15 @@ class Car:
 
     def _get_fraction(self, upper_index, lower_index, runtime):
         points_gap = self.time_arr[upper_index] - self.time_arr[lower_index]
+        zero_var = self.time_arr[upper_index] - self.time_arr[upper_index]  # just so i can get the type right
         timedelta = pd.Timedelta(runtime, 's')
         compare_time = timedelta + self.data.ref_time
         frac_gap = compare_time - self.time_arr[lower_index]
-        fraction = frac_gap/points_gap
-        return fraction
+        if points_gap != zero_var:
+            fraction = frac_gap/points_gap
+            return fraction
+        else:
+            return 0
 
     def _find_upper_index(self, lower_index):
         """if at end, then just same, so will be still"""
@@ -116,26 +130,22 @@ class Car:
         timedelta = pd.Timedelta(runtime, 's')
         compare_time = timedelta + self.data.ref_time
         max_indices = len(time_array)
-        indices_checked = 0
-        point1 = time.time()
-        for indices in range(max_indices - indices_checked):
-            if time_array[indices + indices_checked] < compare_time:
-                lower_index = indices + indices_checked
-                point2 = time.time()
-                print('first took, ', point2 - point1)
-                return lower_index
+        added_index = 0
+        while time_array[self.indices_checked + added_index] < compare_time:
+            if self.indices_checked + added_index < \
+                    (max_indices - 1) and time_array[self.indices_checked + added_index + 1] < compare_time:
+                added_index += 1
             else:
-                lower_index = indices + indices_checked + 1
-                point3 = time.time()
-                print('second took, ', point3 - point1)
-                return lower_index
+                self.indices_checked += added_index
+                return self.indices_checked
+        return self.indices_checked
 
 
 class Race:
     def __init__(self):
         self.track_obj = Track(TRACKNAME)
         self.race_lap_data = sector_times.LapData(YEAR, RACE, 'R')
-        self.drivers = self.race_lap_data.drivers_list()
+        self.drivers = ['44']  # self.race_lap_data.drivers_list()
         self.cars = []
         self.init_drivers()
 
@@ -146,6 +156,8 @@ class Race:
     def race(self):
         done = False
         waiting = True
+        draw_racing_line = False
+        width = 5
 
         while waiting:
             screen.fill((0, 0, 0))
@@ -155,7 +167,17 @@ class Race:
             pressed = pygame.key.get_pressed()
             if pressed[pygame.K_LEFT]:
                 waiting = False
-            self.track_obj.update()
+            elif pressed[pygame.K_UP]:
+                width += 1
+                print(width)
+            elif pressed[pygame.K_DOWN]:
+                width -= 1
+                print(width)
+            elif pressed[pygame.K_j]:
+                draw_racing_line = not draw_racing_line
+            self.track_obj.update(width)
+            if draw_racing_line:
+                self.track_obj.draw_rcing_line()
             for i in self.cars:
                 i.stay()
             pygame.display.flip()
@@ -164,7 +186,7 @@ class Race:
         time_running = 0
         while not done:
             screen.fill((0, 0, 0))
-            self.track_obj.update()
+            self.track_obj.update(width)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True  # quits canvas

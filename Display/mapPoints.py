@@ -4,11 +4,10 @@ import circuit_points
 import fastf1 as ff1
 import os
 import numpy as np
+from pyproj import Transformer
 
-
-##############################################################################
-# FUNCTIONS USED LATER TO TIDY THE OUTPUTTED DATA
-##############################################################################
+TRAN_4326_TO_3857 = Transformer.from_crs("EPSG:4326", "EPSG:3857")
+TRAN_3857_TO_4326 = Transformer.from_crs("EPSG:3857", "EPSG:4326")
 
 sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [13, 50, 0], 'Silverstone': [20, 50, 0]}
 
@@ -106,7 +105,7 @@ def normCoords(coords):
         normCoords.append([xPart, yPart])
     return normCoords
 
-def new_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
+def rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
     ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
     session = ff1.get_session(YEAR, TRACKNAME, 'Q')
     laps = session.load_laps(with_telemetry=True)
@@ -144,11 +143,16 @@ def make_track(track, WINWIDTH, WINHEIGHT, OFFSET):
         point += 1
     return track_points
 
-
+def transform_coords(lon, lat):
+    return TRAN_4326_TO_3857.transform(lon, lat)
 
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     point = 0
-    track = normCoords(circuit_points.return_coords(TRACKNAME))
+    geocoords = circuit_points.return_coords(TRACKNAME)
+    for indices in range(len(geocoords)):
+        x, y = transform_coords(geocoords[indices][1], geocoords[indices][0])
+        geocoords[indices] = (x, y)
+    track = normCoords(geocoords)
     minX, maxX, minY, maxY = findMinMax(track)
     X_ave_pos = (minX + maxX)/2
     Y_ave_pos = (minY + maxY)/2
@@ -174,4 +178,4 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
     return track_points
 
 if __name__ == '__main__':
-    new_generate_points(800, 800, 50, 'Austria', 2020)
+    rceline_generate_points(800, 800, 50, 'Austria', 2020)
