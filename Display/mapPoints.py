@@ -103,7 +103,7 @@ def normCoords(coords):
         xPart = (((pairs[0] - minX) / divisor) - 0.5) * 2
         yPart = (((pairs[1] - minY) / divisor) - 0.5) * 2
         normCoords.append([xPart, yPart])
-    return normCoords
+    return normCoords  # hi
 
 def rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
     ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up

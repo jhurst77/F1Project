@@ -138,7 +138,7 @@ class Car:
             else:
                 self.indices_checked += added_index
                 return self.indices_checked
-        return self.indices_checked
+        return self.indices_checked  # hi
 
 
 class Race:
