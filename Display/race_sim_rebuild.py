@@ -9,12 +9,12 @@ import time
 # ###### Constants ###### #
 WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
-FRAMERATE = 30
+FRAMERATE = 15
 OFFSET = 50  # map offset from edge
 TRACKNAME = 'Sakhir'
 RACE = 'Bahrain'
 YEAR = 2021
-SPEEDMULT = 1  # speed sim up or down from real time
+SPEEDMULT = 15  # speed sim up or down from real time
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -62,7 +62,10 @@ class Car:
     def __init__(self, car_name, track, lap_data):
         self.name = car_name
         self.data = lap_data
+        before_time = time.time()
         self.coords, self.time_arr = self.data.race_points_times(self.name)
+        after_time = time.time()
+        print('race_point_times took, ', after_time - before_time)
 
         self.x = self.coords[0][0]
         self.y = self.coords[0][1]
@@ -79,7 +82,7 @@ class Car:
         self._draw()
 
     def update(self, runtime):
-        lower_index = self.data.return_index(runtime, self.time_arr)
+        lower_index = self._return_index(runtime, self.time_arr)
         upper_index = self._find_upper_index(lower_index)
         fraction = self._get_fraction(upper_index, lower_index, runtime)
 
@@ -108,6 +111,24 @@ class Car:
         else:
             upper_index = lower_index + 1
         return upper_index
+
+    def _return_index(self, runtime, time_array):
+        timedelta = pd.Timedelta(runtime, 's')
+        compare_time = timedelta + self.data.ref_time
+        max_indices = len(time_array)
+        indices_checked = 0
+        point1 = time.time()
+        for indices in range(max_indices - indices_checked):
+            if time_array[indices + indices_checked] < compare_time:
+                lower_index = indices + indices_checked
+                point2 = time.time()
+                print('first took, ', point2 - point1)
+                return lower_index
+            else:
+                lower_index = indices + indices_checked + 1
+                point3 = time.time()
+                print('second took, ', point3 - point1)
+                return lower_index
 
 
 class Race:
@@ -150,7 +171,7 @@ class Race:
             for i in self.cars:
                 i.update(time_running)
             pygame.display.flip()
-            time_running += 1/(FRAMERATE*SPEEDMULT)
+            time_running += 1*SPEEDMULT/(FRAMERATE)
             clock.tick(FRAMERATE*SPEEDMULT)
         pygame.quit()
 

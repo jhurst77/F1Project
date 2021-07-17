@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import numpy as np
 import mapPoints
+import time as t
 import datetime
 import math
 
@@ -164,11 +165,11 @@ class LapData:
         event_times_sorted = sorted(event_times, key = lambda item: item['End time'])
         return event_times_sorted
 
-    def find_sector_number(self, time, secs_ordered):
+    def find_sector_number(self, runtime, secs_ordered):
         """finds the sector number for a given time."""
         sec_number = 0
         try:
-            while secs_ordered[sec_number]['End time'] <= time:
+            while secs_ordered[sec_number]['End time'] <= runtime:
                 sec_number += 1
 
             return sec_number
@@ -186,14 +187,19 @@ class LapData:
         points = mapPoints.make_track(points, 800, 800, 50)
         return points, time_array
     
-    def return_index(self, time, time_array):
-        timedelta = pd.Timedelta(time, 's')
+    def return_index(self, runtime, time_array):
+        point1 = t.time()
+        timedelta = pd.Timedelta(runtime, 's')
         compare_time = timedelta + self.ref_time
         max_indices = len(time_array)
         lower_index = 0
+        point2 = t.time()
+        print('setup took, ', point2-point1)
         for indices in range(max_indices):
             if time_array[indices] < compare_time:
                 lower_index = indices
+        point3 = t.time()
+        print('for loop took, ', point3 - point2)
         return lower_index
         
 
