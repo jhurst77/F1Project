@@ -68,7 +68,6 @@ def make_track(track, WINWIDTH, WINHEIGHT, OFFSET):
     minX, maxX, minY, maxY = findMinMax(track)
     X_ave_pos = (minX + maxX) / 2
     Y_ave_pos = (minY + maxY) / 2
-    print(X_ave_pos, Y_ave_pos)
     mapRangeX = WINWIDTH - 2 * OFFSET
     mapRangeY = WINHEIGHT - 2 * OFFSET
     mapReach = min(mapRangeX, mapRangeY) / 2
@@ -94,35 +93,12 @@ def transform_coords(lon, lat):
     return TRAN_4326_TO_3857.transform(lon, lat)
 
 def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
-    point = 0
     geocoords = circuit_points.return_coords(TRACKNAME)
     for indices in range(len(geocoords)):
         x, y = transform_coords(geocoords[indices][1], geocoords[indices][0])
         geocoords[indices] = (x, y)
     track = normCoords(geocoords)
-    minX, maxX, minY, maxY = findMinMax(track)
-    X_ave_pos = (minX + maxX)/2
-    Y_ave_pos = (minY + maxY)/2
-    print(X_ave_pos, Y_ave_pos)
-    mapRangeX = WINWIDTH - 2 * OFFSET
-    mapRangeY = WINHEIGHT - 2 * OFFSET
-    mapReach = min(mapRangeX, mapRangeY)/2
-    rotation = 'OG'  # TODO: integrate this into function better, make not strings, make not hardcoded.
-    track_points = []
-    while point in range(len(track)):
-        x = (0.5 * WINWIDTH * (-X_ave_pos+1)) + (mapReach * track[point][0])
-        y = (0.5 * WINHEIGHT * (Y_ave_pos+1)) - (mapReach * track[point][1])
-        # track_points.append([x,y])
-        if rotation == '1Clockwise':
-            track_points.append([WINWIDTH - y, x - WINHEIGHT])
-        elif rotation == 'OG':
-            track_points.append([x, y])
-        elif rotation == '2Clockwise':
-            track_points.append([WINWIDTH - x, WINHEIGHT - y])
-        elif rotation == '1AntiClock':
-            track_points.append([y, WINHEIGHT - x])
-        point += 1
-    return track_points
+    return make_track(track, WINWIDTH, WINHEIGHT, OFFSET)
 
 
 def testing_sectors(TRACKNAME, sector_to_test):
