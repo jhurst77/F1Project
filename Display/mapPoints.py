@@ -1,67 +1,14 @@
 import math
-import pygame
-import circuit_points
 import fastf1 as ff1
 import os
 import numpy as np
+import pygame
+import circuit_points
 from pyproj import Transformer
 
 TRAN_4326_TO_3857 = Transformer.from_crs("EPSG:4326", "EPSG:3857")
-TRAN_3857_TO_4326 = Transformer.from_crs("EPSG:3857", "EPSG:4326")
 
 sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [13, 50, 0], 'Silverstone': [20, 50, 0]}
-
-def testing_sectors(TRACKNAME, sector_to_test):
-    """Function used to visually test the positions of the sector boundaries. Pretty shoddily made function but works.
-    Would like to find a way to automatically have sector points."""
-    CANWIDTH = 850  # window width
-    CANHEIGHT = 850  # window width
-    FRAMERATE = 30
-    OFFSET = 30  # map offset from edge
-
-    pygame.init()
-    clock = pygame.time.Clock()
-    screen = pygame.display.set_mode((CANWIDTH, CANHEIGHT))
-    sec_index = sector_to_test - 1
-
-    pt = sectors[TRACKNAME][sec_index]
-    track_points = generate_points(CANWIDTH, CANHEIGHT, OFFSET, TRACKNAME)
-
-    def draw_map():
-        for j in range(len(track_points)):
-            pygame.draw.line(screen, 'blue', track_points[j - 1], track_points[j])
-
-    def car_stay():
-        x, y = track_points[pt][0], track_points[pt][1]
-        pygame.draw.circle(screen, [255, 255, 255], (x, y), 5)
-
-    def update():
-        draw_map()
-        car_stay()
-
-    def test():
-        done = False
-        while not done:
-            screen.fill((0, 0, 0))
-            update()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True  # quits canvas
-            pygame.display.flip()
-            clock.tick(FRAMERATE)
-        pygame.quit()
-
-    def draw_box():
-        minX, maxX, minY, maxY = findMinMax(track_points)
-        bleft = (minX, maxY)
-        bright = (maxX, maxY)
-        tleft = (minX, minY)
-        tright = (maxX, minY)
-        pygame.draw.line(screen, 'green', bleft, bright)
-        pygame.draw.line(screen, 'blue', bright, tright)
-        pygame.draw.line(screen, 'yellow', tright, tleft)
-    test()
-
 
 def findMinMax(coords):
     """find the minimum and maximum of the X and Y values so that the
@@ -176,6 +123,60 @@ def generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME):
             track_points.append([y, WINHEIGHT - x])
         point += 1
     return track_points
+
+
+def testing_sectors(TRACKNAME, sector_to_test):
+    """Function used to visually test the positions of the sector boundaries. Pretty shoddily made function but works.
+    Would like to find a way to automatically have sector points. --- Might use this to test concepts for sector
+    timing later."""
+    CANWIDTH = 850  # window width
+    CANHEIGHT = 850  # window width
+    FRAMERATE = 30
+    OFFSET = 30  # map offset from edge
+
+    pygame.init()
+    clock = pygame.time.Clock()
+    screen = pygame.display.set_mode((CANWIDTH, CANHEIGHT))
+    sec_index = sector_to_test - 1
+
+    pt = sectors[TRACKNAME][sec_index]
+    track_points = generate_points(CANWIDTH, CANHEIGHT, OFFSET, TRACKNAME)
+
+    def draw_map():
+        for j in range(len(track_points)):
+            pygame.draw.line(screen, 'blue', track_points[j - 1], track_points[j])
+
+    def car_stay():
+        x, y = track_points[pt][0], track_points[pt][1]
+        pygame.draw.circle(screen, [255, 255, 255], (x, y), 5)
+
+    def update():
+        draw_map()
+        car_stay()
+
+    def test():
+        done = False
+        while not done:
+            screen.fill((0, 0, 0))
+            update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True  # quits canvas
+            pygame.display.flip()
+            clock.tick(FRAMERATE)
+        pygame.quit()
+
+    def draw_box():
+        minX, maxX, minY, maxY = findMinMax(track_points)
+        bleft = (minX, maxY)
+        bright = (maxX, maxY)
+        tleft = (minX, minY)
+        tright = (maxX, minY)
+        pygame.draw.line(screen, 'green', bleft, bright)
+        pygame.draw.line(screen, 'blue', bright, tright)
+        pygame.draw.line(screen, 'yellow', tright, tleft)
+    test()
+
 
 if __name__ == '__main__':
     rceline_generate_points(800, 800, 50, 'Austria', 2020)
