@@ -1,9 +1,7 @@
 import fastf1 as ff1
-import pandas as pd
 import os
 import numpy as np
 import mapPoints
-import time as t
 
 ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
 
