@@ -32,11 +32,10 @@ def return_coords(trackname):
     file = track_dict[trackname]
     with open(file) as f:
         gj = geojson.load(f)
-    coords = gj['features'][0]['geometry']['coordinates']
+    coords = list(geojson.utils.coords(gj))
     os.chdir(cwd)
     return coords
 
 
 if __name__ == '__main__':
-    track_dict_output = track_file_dict()
-    print(track_dict_output)  # tests to see if works
+    print(list(return_coords('Spielberg')))
