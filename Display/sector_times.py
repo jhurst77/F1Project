@@ -37,6 +37,7 @@ class LapData:
         return team
 
     def race_points_times(self, DriverID):
+        """returns the location points corresponding to the times in time_array"""
         driver = self.track_laps.pick_driver(DriverID)
         tel = driver.get_telemetry()
         x = np.array(tel['X'].values)
@@ -46,21 +47,6 @@ class LapData:
         points = mapPoints.normCoords(points)
         points = mapPoints.make_track(points, 800, 800, 50)
         return points, time_array
-    
-    def return_index(self, runtime, time_array):
-        point1 = t.time()
-        timedelta = pd.Timedelta(runtime, 's')
-        compare_time = timedelta + self.ref_time
-        max_indices = len(time_array)
-        lower_index = 0
-        point2 = t.time()
-        print('setup took, ', point2-point1)
-        for indices in range(max_indices):
-            if time_array[indices] < compare_time:
-                lower_index = indices
-        point3 = t.time()
-        print('for loop took, ', point3 - point2)
-        return lower_index
 
 
 if __name__ == '__main__':
