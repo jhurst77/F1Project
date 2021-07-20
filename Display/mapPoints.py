@@ -8,7 +8,8 @@ from pyproj import Transformer
 
 TRAN_4326_TO_3857 = Transformer.from_crs("EPSG:4326", "EPSG:3857")
 
-sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [13, 50, 0], 'Silverstone': [20, 50, 0]}
+sectors = {'Sakhir' : [23, 75, 0], 'Barcelona': [42, 94, 0], 'Spielberg': [13, 50, 0], 'Silverstone': [20, 50, 0],
+           'Sochi': [10, 20, 30], 'Spa Francorchamps': [10, 20, 30]}
 
 def findMinMax(coords):
     """find the minimum and maximum of the X and Y values so that the
@@ -23,9 +24,9 @@ def findMinMax(coords):
     in that order"""
 
     minX = math.inf  # these values are the opposite and initialised here
-    maxX = 0
+    maxX = -math.inf
     minY = math.inf
-    maxY = 0
+    maxY = -math.inf
     for pairs in coords:
         minX = min(minX, pairs[0])  # keeps the appropriate value each loop.
         minY = min(minY, pairs[1])
@@ -115,16 +116,19 @@ def testing_sectors(TRACKNAME, sector_to_test):
     screen = pygame.display.set_mode((CANWIDTH, CANHEIGHT))
     sec_index = sector_to_test - 1
 
-    pt = sectors[TRACKNAME][sec_index]
+    try:
+        pt = sectors[TRACKNAME][sec_index]
+    except KeyError:
+        pt = 0
     track_points = generate_points(CANWIDTH, CANHEIGHT, OFFSET, TRACKNAME)
 
     def draw_map():
         for j in range(len(track_points)):
-            pygame.draw.line(screen, 'blue', track_points[j - 1], track_points[j])
+            pygame.draw.line(screen, 'red', track_points[j - 1], track_points[j], 3)
 
     def car_stay():
         x, y = track_points[pt][0], track_points[pt][1]
-        pygame.draw.circle(screen, [255, 255, 255], (x, y), 5)
+        pygame.draw.circle(screen, [255, 255, 255], (x, y), 0)  # 5)
 
     def update():
         draw_map()
@@ -155,4 +159,6 @@ def testing_sectors(TRACKNAME, sector_to_test):
 
 
 if __name__ == '__main__':
-    rceline_generate_points(800, 800, 50, 'Austria', 2020)
+    for names in circuit_points.track_file_dict().keys():
+        print(names)
+        testing_sectors(names, 1)

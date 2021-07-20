@@ -10,10 +10,10 @@ WINWIDTH = 800  # window width
 WINHEIGHT = 800  # window width
 FRAMERATE = 30
 OFFSET = 50  # map offset from edge
-TRACKNAME = 'Sakhir'
-RACE = 'Bahrain'
+TRACKNAME = 'Silverstone'
+RACE = 'Silverstone'
 YEAR = 2021
-SPEEDMULT = 20  # speed sim up or down from real time
+SPEEDMULT = 10  # speed sim up or down from real time
 clock = pygame.time.Clock()  # used to keep track of timing and framerate
 screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), vsync=True)
 
@@ -25,7 +25,10 @@ class Track:
     def __init__(self, name):
         self.name = name
         self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
-        self.race_line_points = mapPoints.rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
+        try:
+            self.race_line_points = mapPoints.rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
+        except:
+            pass
 
     def draw_map(self, width):
         """simple function that draws the map"""
@@ -143,6 +146,8 @@ class Race:
         self.started = False
         self.draw_racing_line = False
         self.track_width = 1
+        self.Speedmult = SPEEDMULT
+        self.time_running = 0
 
     def _init_drivers_if_empty(self):
         """initilaises the cars and writes them into a list"""
@@ -170,6 +175,14 @@ class Race:
         elif pressed[pygame.K_DOWN]:
             self.track_width -= 1
             print(self.track_width)
+        elif pressed[pygame.K_d]:
+            if self.Speedmult < 20:
+                self.Speedmult += 1
+            print(self.Speedmult)
+        elif pressed[pygame.K_a]:
+            if self.Speedmult > 1:
+                self.Speedmult -= 1
+            print(self.Speedmult)
         elif pressed[pygame.K_j]:
             self.draw_racing_line = not self.draw_racing_line
 
@@ -189,13 +202,14 @@ class Race:
 
     def _race_and_draw(self):
         """does the race loop"""
-        time_running = time.time() - self.sim_start
         screen.fill((0, 0, 0))
-        self.track_obj.update()
+        self._check_key_presses()
+        self.track_obj.update(self.track_width)
         self._check_if_quitting()
         for i in self.cars:
-            i.update(time_running * SPEEDMULT)
+            i.update(self.time_running)
         pygame.display.flip()
+        self.time_running += self.Speedmult / FRAMERATE
         clock.tick(FRAMERATE)
 
     def race(self):
