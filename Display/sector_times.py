@@ -50,4 +50,4 @@ class LapData:
 if __name__ == '__main__':
     Austria = LapData(2021, 'Silverstone', 'R')
     LEC = Austria.track_laps.pick_driver('LEC')
-    LEC.iloc[0]
+    LEC.iloc[-1]

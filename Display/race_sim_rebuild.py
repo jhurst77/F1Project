@@ -64,6 +64,7 @@ class Car:
         self.indices_checked = 0  # variable used to ignore indices that have already been checked
         self.laps_checked = 0
         self.laps = 1
+        self.max_laps = self.lap_data.iloc[-1].LapNumber
 
         self.track = track
 
@@ -185,9 +186,11 @@ class Race:
         """initilaises the cars and writes them into a list"""
         if len(self.cars) > 0:
             return
-        for driver_names in self.drivers:
-            self.cars.append(Car(driver_names, self.track_obj, self.race_lap_data))
-            pygame.display.flip()
+        else:
+            for driver_names in self.drivers:
+                self.cars.append(Car(driver_names, self.track_obj, self.race_lap_data))
+                pygame.display.flip()
+            self.amt_laps = str(int(max([item.max_laps for item in self.cars])))
 
     def draw_laps(self):
         lap_number = 1
@@ -197,8 +200,8 @@ class Race:
         except IndexError:
             pass
         lap = str(lap_number)
-        total_laps = ' / 52'  # TODO: find method to find the no. laps
-        bottom_line = lap + total_laps
+        slash = ' / '  # TODO: find method to find the no. laps
+        bottom_line = lap + slash + self.amt_laps
         self.REG_FONT.render_to(screen, (40, 100), bottom_line, (255, 255, 255))
         self.WIDE_FONT.render_to(screen, (31, 50), "LAP", (255, 255, 255))
 
@@ -241,10 +244,10 @@ class Race:
         self._check_if_quitting()
         self._check_key_presses()
         self.track_obj.update(self.track_width)
-        self.draw_laps()
         if self.draw_racing_line:
             self.track_obj.draw_rcing_line()
         self._init_drivers_if_empty()
+        self.draw_laps()
         for i in self.cars:
             i.stay()
         pygame.display.flip()
