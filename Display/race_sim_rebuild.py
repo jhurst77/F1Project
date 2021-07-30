@@ -280,6 +280,5 @@ class Race:
 if __name__ == "__main__":
     Main_race = Race()
     Main_race.race()
-    print('testing')
     # Test_car = Car('44', Track('Silverstone'), sector_times.LapData(2021, 'Silvestone', 'R'))
     # print(Test_car._get_laps(300))
