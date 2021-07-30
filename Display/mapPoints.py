@@ -53,7 +53,7 @@ def normCoords(coords):
         normCoords.append([xPart, yPart])
     return normCoords
 
-def rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
+def raceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR):
     ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
     session = ff1.get_session(YEAR, TRACKNAME, 'Q')
     laps = session.load_laps(with_telemetry=True)
