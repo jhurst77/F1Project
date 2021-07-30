@@ -3,7 +3,8 @@ import os
 import numpy as np
 import mapPoints
 
-ff1.Cache.enable_cache(os.path.join(os.getcwd(), '__pycache__'))  # cache to speed up
+current_path = __file__
+ff1.Cache.enable_cache(os.path.join(os.path.split(current_path)[0], '__pycache__'))  # cache to speed up
 
 
 class LapData:
