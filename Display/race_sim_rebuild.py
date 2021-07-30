@@ -36,7 +36,7 @@ class Track:
         for j in range(len(self.track_points)):
             pygame.draw.line(screen, 'red', self.track_points[j - 1], self.track_points[j], width)
 
-    def draw_rcing_line(self):
+    def draw_racing_line(self):
         """ simple function that draws the racing line"""
         for j in range(len(self.race_line_points)):
             pygame.draw.line(screen, 'blue', self.race_line_points[j - 1], self.race_line_points[j], 1)
@@ -45,7 +45,7 @@ class Track:
         """method to be called once per frame to draw track."""
         self.draw_map(width)
         if rce_line:
-            self.draw_rcing_line()
+            self.draw_racing_line()
 
 
 class Car:
@@ -245,7 +245,7 @@ class Race:
         self._check_key_presses()
         self.track_obj.update(self.track_width)
         if self.draw_racing_line:
-            self.track_obj.draw_rcing_line()
+            self.track_obj.draw_racing_line()
         self._init_drivers_if_empty()
         self.draw_laps()
         for i in self.cars:
