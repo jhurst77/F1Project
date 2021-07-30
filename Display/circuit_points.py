@@ -38,4 +38,4 @@ def return_coords(trackname):
 
 
 if __name__ == '__main__':
-    print(list(return_coords('Spielberg')))
+    print(track_file_dict())

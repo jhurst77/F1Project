@@ -48,7 +48,6 @@ class LapData:
 
 
 if __name__ == '__main__':
-    Austria = LapData(2020, 'Austria', 'R')
-    points, time_array = Austria.race_points_times('VER')
-    index = Austria.return_index(5000, time_array)
-    print(points[index])
+    Austria = LapData(2021, 'Silverstone', 'R')
+    LEC = Austria.track_laps.pick_driver('LEC')
+    LEC.iloc[-1]
