@@ -27,7 +27,7 @@ class Track:
         self.name = name
         self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
         try:
-            self.race_line_points = mapPoints.rceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
+            self.race_line_points = mapPoints.raceline_generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME, YEAR)
         except:
             pass
 
