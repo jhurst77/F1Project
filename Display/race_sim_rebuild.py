@@ -23,6 +23,7 @@ class Track:
     """Class for drawing a track object.
     draws track from points generated in mapPoints
     draws racing line from points generated in mapPoints"""
+
     def __init__(self, name):
         self.name = name
         self.track_points = mapPoints.generate_points(WINWIDTH, WINHEIGHT, OFFSET, TRACKNAME)
@@ -51,6 +52,7 @@ class Track:
 class Car:
     """Object used to represent each car on an F1 track. Takes about 1 second to initialise because must process
     and get a 50k large array."""
+
     def __init__(self, car_name, track, car_data):
         self.name = car_name
         self.data = car_data  # position and sector time data
@@ -120,7 +122,7 @@ class Car:
     def _find_upper_index(self, lower_index):
         """Adds 1 to the index of the lower index, unless at the end of the telemetry, in which case it returns the
         lower index."""
-        if lower_index == len(self.time_arr)-1:
+        if lower_index == len(self.time_arr) - 1:
             if not self.retired:
                 print(self.name, 'finished telemetry')
                 self.retired = True
@@ -162,9 +164,9 @@ class Car:
         return self.lap_data.iloc[added_index].LapNumber
 
 
-
 class Race:
     """Class that controls the race"""
+
     def __init__(self):
         pygame.init()
         self.track_obj = Track(TRACKNAME)
@@ -236,7 +238,6 @@ class Race:
 
     def _draw_screen(self):
         screen.fill((150, 150, 150))
-
 
     def _wait_and_draw(self):
         """draws the map and the cars when waiting for the race to start"""
